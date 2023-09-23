@@ -1,0 +1,18 @@
+{
+  "name": "goonhub-api-event-processor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wire",
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.9.0",
+    "pluralize": "^8.0.0",
+    "redis": "^4.6.4"
+  }
+}
