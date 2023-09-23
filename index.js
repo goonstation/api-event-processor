@@ -14,8 +14,15 @@ pgPool.on('error', (err, client) => {
   process.exit(-1)
 })
 
+const redisConnectionDetails = {
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT
+}
+if (process.env.REDIS_PASSWORD) {
+  redisConnectionDetails.password = process.env.REDIS_PASSWORD
+}
 const redisClient = Redis.createClient({
-  socket: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
+  socket: redisConnectionDetails,
 })
 redisClient.on('error', (err) => console.log('Redis Client Error', err))
 await redisClient.connect()
