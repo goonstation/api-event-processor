@@ -23,7 +23,7 @@ const redisConnectionDetails = {
 if (process.env.REDIS_PASSWORD) {
   redisConnectionDetails.password = process.env.REDIS_PASSWORD
 }
-const redisClient = Redis.createClient(socketredisConnectionDetails)
+const redisClient = Redis.createClient(redisConnectionDetails)
 redisClient.on('error', (err) => console.log('Redis Client Error', err))
 await redisClient.connect()
 
