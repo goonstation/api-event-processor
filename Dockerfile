@@ -7,4 +7,4 @@ COPY package.json .
 ENV NODE_ENV=development
 RUN npm install -g nodemon && npm install
 COPY . .
-CMD ["nodemon", "index.js"]
+CMD ["nodemon", "src/index.js"]

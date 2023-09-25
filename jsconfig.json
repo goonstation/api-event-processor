@@ -4,5 +4,5 @@
     "target": "es6",
     "baseUrl": "./",
   },
-  "include": ["."],
+  "include": ["./src"],
 }
