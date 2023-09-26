@@ -106,7 +106,7 @@ const processQueue = () => {
 
 const queueWorkerInterval = setInterval(processQueue, eventLoopSeconds * 1000)
 
-process.on('SIGINT', () => {
+process.on('SIGTERM', () => {
   _log('Shutting down and cleaning up')
   queueWorker.close()
   clearInterval(queueWorkerInterval)
