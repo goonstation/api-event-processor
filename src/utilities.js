@@ -34,5 +34,5 @@ export function columns(data) {
 }
 
 export function _log(...args) {
-  console.log(`[${new Date().toLocaleString()}]`, ...args)
+  console.log(`[${process.env.pm_id}] [${new Date().toLocaleString()}]`, ...args)
 }

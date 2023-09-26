@@ -9,7 +9,8 @@ module.exports = {
 			'.git'
 		],
 		env_development: {
-			NODE_ENV: "development"
+			NODE_ENV: "development",
+      PM2_KILL_SIGNAL: 'SIGTERM'
 		}
   }]
 };
