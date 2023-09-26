@@ -82,7 +82,7 @@ const processQueue = () => {
   const items = eventsToInsert.splice(0, length)
 
   const queryPromises = []
-  console.log(`[${new Date().toLocaleString()}] Inserting ${items.length} events`)
+  const startTime = new Date().getTime()
   for (const item of items) {
     const table = escapeIdentifier(`events_${pluralize(item.type)}`)
     const dataKeys = Object.keys(item.data)
@@ -99,7 +99,8 @@ const processQueue = () => {
   }
 
   return Promise.all(queryPromises).then(() => {
-    console.log(`[${new Date().toLocaleString()}] Done`)
+    const endTime = new Date().getTime()
+    console.log(`[${new Date().toLocaleString()}] Inserting ${items.length} events took ${endTime - startTime}ms`)
   })
 }
 
