@@ -1,4 +1,5 @@
 import Redis from 'redis'
+import { _log } from './utilities.js'
 
 let redisClient
 
@@ -15,13 +16,13 @@ const connect = async () => {
 
   const newClient = Redis.createClient(redisConnectionDetails)
   newClient.on('ready', () => {
-    console.log('Redis client connected')
+    _log('Redis client connected')
   })
   newClient.on('error', (err) => {
-    console.log('Redis client error', err.message)
+    _log('Redis client error', err.message)
   })
   newClient.on('reconnecting', () => {
-    console.log('Redis client reconnecting')
+    _log('Redis client reconnecting')
   })
 
   await newClient.connect()
@@ -32,13 +33,13 @@ const connect = async () => {
 const getWorker = async () => {
   const newWorker = redisClient.duplicate()
   newWorker.on('ready', () => {
-    console.log('Redis worker connected')
+    _log('Redis worker connected')
   })
   newWorker.on('error', (err) => {
-    console.log('Redis worker error', err.message)
+    _log('Redis worker error', err.message)
   })
   newWorker.on('reconnecting', () => {
-    console.log('Redis worker reconnecting')
+    _log('Redis worker reconnecting')
   })
 
   await newWorker.connect()

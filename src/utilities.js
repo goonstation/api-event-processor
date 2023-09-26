@@ -19,7 +19,6 @@ export function expand(rowCount, columnCount, startAt = 1) {
 export function flatten(arr) {
   const newArr = []
   arr.forEach((v) => {
-    console.log(v)
     v.forEach((p) => newArr.push(p))
   })
   return newArr
@@ -32,4 +31,8 @@ export function columns(data) {
     cols.push(escapeIdentifier(key))
   })
   return `(${cols.join(', ')})`
+}
+
+export function _log(...args) {
+  console.log(`[${new Date().toLocaleString()}]`, ...args)
 }

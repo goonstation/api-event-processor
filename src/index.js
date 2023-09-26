@@ -1,7 +1,7 @@
 import pluralize from 'pluralize'
 import { connect as connectPg, escapeIdentifier } from './postgres.js'
 import { connect as connectRedis, getWorker as getRedisWorker } from './redis.js'
-import { expand, columns } from './utilities.js'
+import { expand, columns, _log } from './utilities.js'
 
 // The name that the redis queue that contains our events has
 const eventQueue = 'events'
@@ -22,7 +22,7 @@ const worker = async (fn) => {
       message = await redisWorker.brPop(eventQueue, 10)
       if (message) fn(message.element)
     } catch (e) {
-      console.log(e)
+      _log(e)
     }
     next()
   }
@@ -42,7 +42,7 @@ const processElement = (element) => {
     try {
       message = JSON.parse(JSON.parse(element))
     } catch (e) {
-      console.error(`Unable to parse JSON from:`, element)
+      _log(`Unable to parse JSON from:`, element)
       return
     }
   } else {
@@ -59,7 +59,7 @@ const processElement = (element) => {
 
   // Some validation
   if (!message.type || !message.round_id || !message.created_at || !message.data) {
-    console.error(`Got invalid event data:`, message)
+    _log(`Got invalid event data:`, message)
     return
   }
 
@@ -92,7 +92,7 @@ const processQueue = () => {
         Object.values(item.data)
       )
       .catch((err) => {
-        console.error('Postgresql query error', err.message)
+        _log('Postgresql query error', err.message)
         // TODO: do something with events that failed to insert due to reasons unrelated to data structure (e.g. connection issues)
       })
     queryPromises.push(queryPromise)
@@ -100,14 +100,14 @@ const processQueue = () => {
 
   return Promise.all(queryPromises).then(() => {
     const endTime = new Date().getTime()
-    console.log(`[${new Date().toLocaleString()}] Inserting ${items.length} events took ${endTime - startTime}ms`)
+    _log(`Inserting ${items.length} events took ${endTime - startTime}ms`)
   })
 }
 
 const queueWorkerInterval = setInterval(processQueue, eventLoopSeconds * 1000)
 
 process.on('SIGINT', () => {
-  console.log('Shutting down and cleaning up')
+  _log('Shutting down and cleaning up')
   queueWorker.close()
   clearInterval(queueWorkerInterval)
   pgPool.end()
