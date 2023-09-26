@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "pm2-runtime ecosystem.config.cjs --env production",
+    "dev": "pm2-dev ecosystem.dev.config.cjs --env development"
   },
   "author": "Wire",
   "license": "ISC",

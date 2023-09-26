@@ -13,8 +13,10 @@ const redisClient = await connectRedis()
 
 const worker = async (fn) => {
   const redisWorker = await getRedisWorker()
+  let closing = false
 
   const next = async () => {
+    if (closing) return
     let message = null
     try {
       message = await redisWorker.brPop(eventQueue, 10)
@@ -26,6 +28,7 @@ const worker = async (fn) => {
   }
   next()
   const close = () => {
+    closing = true
     redisWorker.quit()
   }
   return { close: close }
@@ -71,11 +74,11 @@ const processElement = (element) => {
   })
 }
 
-const queueWorker = worker(processElement)
+const queueWorker = await worker(processElement)
 
-setInterval(() => {
+const processQueue = () => {
   const length = eventsToInsert.length
-  if (!length) return
+  if (!length) return Promise.resolve()
   const items = eventsToInsert.splice(0, length)
 
   const queryPromises = []
@@ -95,13 +98,22 @@ setInterval(() => {
     queryPromises.push(queryPromise)
   }
 
-  Promise.all(queryPromises).then(() => {
+  return Promise.all(queryPromises).then(() => {
     console.log(`[${new Date().toLocaleString()}] Done`)
   })
-}, eventLoopSeconds * 1000)
+}
 
-process.on('exit', (code) => {
-  pgPool.end()
+const queueWorkerInterval = setInterval(processQueue, eventLoopSeconds * 1000)
+
+process.on('SIGINT', () => {
+  console.log('Shutting down and cleaning up')
   queueWorker.close()
+  clearInterval(queueWorkerInterval)
+  pgPool.end()
   redisClient.quit()
+
+  // Finish processing any remaining events
+  processQueue().then(() => {
+    process.exit(0)
+  })
 })

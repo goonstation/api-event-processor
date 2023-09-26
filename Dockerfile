@@ -3,8 +3,8 @@ FROM node:19
 RUN mkdir /app
 WORKDIR /app
 
+RUN apt-get update && \
+    apt-get install -y nano git
+
 COPY package.json .
-ENV NODE_ENV=development
-RUN npm install -g nodemon && npm install
-COPY . .
-CMD ["nodemon", "src/index.js"]
+RUN npm install -g pm2 && npm install
