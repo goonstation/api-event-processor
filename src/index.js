@@ -8,6 +8,7 @@ const eventQueue = 'events'
 // Interval time between insert batches
 const eventLoopSeconds = 1
 
+let busyProcessingQueue = false
 const pgPool = connectPg()
 const redisClient = await connectRedis()
 
@@ -17,12 +18,14 @@ const worker = async (fn) => {
 
   const next = async () => {
     if (closing) return
-    let message = null
-    try {
-      message = await redisWorker.brPop(eventQueue, 10)
-      if (message) fn(message.element)
-    } catch (e) {
-      _log(e)
+    if (!busyProcessingQueue) {
+      let message = null
+      try {
+        message = await redisWorker.brPop(eventQueue, 10)
+        if (message) fn(message.element)
+      } catch (e) {
+        _log(e)
+      }
     }
     next()
   }
@@ -78,7 +81,8 @@ const queueWorker = await worker(processElement)
 
 const processQueue = () => {
   const length = eventsToInsert.length
-  if (!length) return Promise.resolve()
+  if (busyProcessingQueue || !length) return Promise.resolve()
+  busyProcessingQueue = true
   const items = eventsToInsert.splice(0, length)
 
   const queryPromises = []
@@ -99,6 +103,7 @@ const processQueue = () => {
   }
 
   return Promise.all(queryPromises).then(() => {
+    busyProcessingQueue = false
     const endTime = new Date().getTime()
     _log(`Inserting ${items.length} events took ${endTime - startTime}ms`)
   })
