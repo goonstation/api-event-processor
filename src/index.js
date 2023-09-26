@@ -18,7 +18,9 @@ const worker = async (fn) => {
 
   const next = async () => {
     if (closing) return
-    if (!busyProcessingQueue) {
+    if (busyProcessingQueue) {
+      await new Promise(r => setTimeout(r, 1000)) // a js sleep :v
+    } else {
       let message = null
       try {
         message = await redisWorker.brPop(eventQueue, 10)
