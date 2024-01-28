@@ -5,12 +5,15 @@ import { expand, columns, _log } from './utilities.js'
 
 // The name that the redis queue that contains our events has
 const eventQueue = 'events'
+// The name of the redis list that we push events to (for metrics)
+const eventHistoryList = 'event_history'
 // Interval time between insert batches
 const eventLoopSeconds = 1
 
 let busyProcessingQueue = false
 const pgPool = connectPg()
 const redisClient = await connectRedis()
+const redisHistoryWorker = await getRedisWorker()
 
 const worker = async (fn) => {
   const redisWorker = await getRedisWorker()
@@ -97,6 +100,9 @@ const processQueue = () => {
         `INSERT INTO ${table} ${columns(dataKeys)} VALUES ${expand(1, dataKeys.length)}`,
         Object.values(item.data)
       )
+      .then(() => {
+        redisHistoryWorker.lPush(eventHistoryList, JSON.stringify(item))
+      })
       .catch((err) => {
         _log('Postgresql query error', err.message)
         // TODO: do something with events that failed to insert due to reasons unrelated to data structure (e.g. connection issues)

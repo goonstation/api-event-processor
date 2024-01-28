@@ -4,6 +4,9 @@ networks:
     sail:
         driver: bridge
         external: true
+    event-processor:
+        driver: bridge
+        external: false
 
 services:
     node:
@@ -15,4 +18,22 @@ services:
         volumes:
             - .:/app
         networks:
+            - event-processor
             - sail
+        depends_on:
+            - redis
+
+    redis:
+        image: 'redis'
+        hostname: eventredis
+        expose:
+            - 6379
+        volumes:
+            - 'event-redis:/data'
+        networks:
+            - event-processor
+            - sail
+
+volumes:
+    event-redis:
+        driver: local
