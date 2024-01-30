@@ -26,6 +26,8 @@ services:
     redis:
         image: 'redis'
         hostname: eventredis
+        ports:
+            - '63791:6379'
         expose:
             - 6379
         volumes:
