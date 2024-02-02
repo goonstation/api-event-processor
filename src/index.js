@@ -104,7 +104,7 @@ const processQueue = () => {
         redisHistoryWorker.lPush(eventHistoryList, JSON.stringify(item))
       })
       .catch((err) => {
-        _log('Postgresql query error', err.message)
+        _log('Postgresql query error', err.message, JSON.stringify(item))
         // TODO: do something with events that failed to insert due to reasons unrelated to data structure (e.g. connection issues)
       })
     queryPromises.push(queryPromise)
