@@ -22,7 +22,7 @@ const worker = async (fn) => {
   const next = async () => {
     if (closing) return
     if (busyProcessingQueue) {
-      await new Promise(r => setTimeout(r, 1000)) // a js sleep :v
+      await new Promise((r) => setTimeout(r, 1000)) // a js sleep :v
     } else {
       let message = null
       try {
@@ -66,9 +66,19 @@ const processElement = (element) => {
   }
 
   // Some validation
-  if (!message.type || !message.round_id || !message.created_at || !message.data) {
+  if (
+    !message.type ||
+    !message.round_id ||
+    (!message.created_at && !message.created_at_unix) ||
+    !message.data
+  ) {
     _log(`Got invalid event data:`, message)
     return
+  }
+
+  let createdAt = message.created_at
+  if (message.created_at_unix) {
+    createdAt = new Date(message.created_at_unix * 1000).toISOString()
   }
 
   eventsToInsert.push({
@@ -76,7 +86,7 @@ const processElement = (element) => {
     data: {
       round_id: message.round_id,
       ...(message.player_id && { player_id: message.player_id }),
-      created_at: message.created_at,
+      created_at: createdAt,
       ...message.data,
     },
   })
