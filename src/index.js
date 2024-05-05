@@ -1,7 +1,14 @@
 import pluralize from 'pluralize'
+import * as Sentry from '@sentry/node'
 import { connect as connectPg, escapeIdentifier } from './postgres.js'
 import { connect as connectRedis, getWorker as getRedisWorker } from './redis.js'
 import { expand, columns, _log } from './utilities.js'
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+  })
+}
 
 // The name that the redis queue that contains our events has
 const eventQueue = 'events'
@@ -114,7 +121,10 @@ const processQueue = () => {
       //   redisHistoryWorker.lPush(eventHistoryList, JSON.stringify(item))
       // })
       .catch((err) => {
-        _log('Postgresql query error', err.message, JSON.stringify(item))
+        const errorMessage = { message: 'Postgresql query error', exception: err.message, item: JSON.stringify(item) }
+        _log(errorMessage)
+        Sentry.captureException(err, { extra: errorMessage.item })
+
         // TODO: do something with events that failed to insert due to reasons unrelated to data structure (e.g. connection issues)
       })
     queryPromises.push(queryPromise)
