@@ -143,11 +143,11 @@ process.on('SIGTERM', () => {
   _log('Shutting down and cleaning up')
   queueWorker.close()
   clearInterval(queueWorkerInterval)
-  pgPool.end()
   redisClient.quit()
 
   // Finish processing any remaining events
   processQueue().then(() => {
+    pgPool.end()
     process.exit(0)
   })
 })
